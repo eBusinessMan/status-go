@@ -115,7 +115,13 @@ func (c CallTask) Cancel() {}
 // pushing the resultant return value and error (or nil) into the associated
 // channels. If the call results in an error, it will return that error.
 func (c CallTask) Execute(vm *vm.VM, l *loop.Loop) error {
+	// vm is not used directly here, but underlying
+	// FunctionCall in CallTask likely does use it,
+	// so we must to guard it here
+	vm.Lock()
 	v, err := c.Function.Call(otto.NullValue(), c.Args...)
+	vm.Unlock()
+
 	c.Value <- v
 	c.Error <- err
 
