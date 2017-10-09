@@ -3,16 +3,10 @@ package api
 import (
 	"context"
 
-	"github.com/NaySoftware/go-fcm"
 	"github.com/ethereum/go-ethereum/accounts/keystore"
 	gethcommon "github.com/ethereum/go-ethereum/common"
 	"github.com/status-im/status-go/geth/common"
-	"github.com/status-im/status-go/geth/log"
 	"github.com/status-im/status-go/geth/params"
-)
-
-const (
-	serverKey = "AAAAxwa-r08:APA91bFtMIToDVKGAmVCm76iEXtA4dn9MPvLdYKIZqAlNpLJbd12EgdBI9DSDSXKdqvIAgLodepmRhGVaWvhxnXJzVpE6MoIRuKedDV3kfHSVBhWFqsyoLTwXY4xeufL9Sdzb581U-lx"
 )
 
 // StatusAPI provides API to access Status related functionality.
@@ -195,32 +189,10 @@ func (api *StatusAPI) JailBaseJS(js string) {
 	api.b.jailManager.BaseJS(js)
 }
 
-// TODO(oskarth): API package this stuff
+// Notify and send message
 func (api *StatusAPI) Notify(token string) string {
-	log.Debug("Notify", "token", token)
-
-	var NP fcm.NotificationPayload
-	NP.Title = "Status - new message"
-	NP.Body = "ping"
-
-	// TODO(oskarth): Experiment with this
-	data := map[string]string{
-		"msg": "Hello World1",
-		"sum": "Happy Day",
-	}
-
-	ids := []string{
-		token,
-	}
-
-	c := fcm.NewFcmClient(serverKey)
-	c.NewFcmRegIdsMsg(ids, data)
-	c.SetNotificationPayload(&NP)
-
-	_, err := c.Send()
-	if err != nil {
-		log.Error("Notify failed:", err)
-	}
+	api.b.notification.Notify(token)
+	api.b.notification.Send()
 
 	return token
 }
