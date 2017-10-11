@@ -233,7 +233,11 @@ func (m *Manager) completeRemoteTransaction(queuedTx *common.QueuedTx, password 
 	defer cancel()
 
 	var txCount hexutil.Uint
-	client := m.nodeManager.RPCClient()
+	client, err := m.nodeManager.RPCClient()
+	if err != nil {
+		return emptyHash, err
+	}
+
 	if err := client.CallContext(ctx, &txCount, "eth_getTransactionCount", queuedTx.Args.From, "pending"); err != nil {
 		return emptyHash, err
 	}
@@ -299,7 +303,11 @@ func (m *Manager) estimateGas(args common.SendTxArgs) (*hexutil.Big, error) {
 		return args.Gas, nil
 	}
 
-	client := m.nodeManager.RPCClient()
+	client, err := m.nodeManager.RPCClient()
+	if err != nil {
+		return nil, err
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
@@ -343,7 +351,11 @@ func (m *Manager) estimateGas(args common.SendTxArgs) (*hexutil.Big, error) {
 }
 
 func (m *Manager) gasPrice() (*hexutil.Big, error) {
-	client := m.nodeManager.RPCClient()
+	client, err := m.nodeManager.RPCClient()
+	if err != nil {
+		return nil, err
+	}
+
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 

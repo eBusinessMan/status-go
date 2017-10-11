@@ -209,10 +209,11 @@ func (mr *MockNodeManagerMockRecorder) AccountKeyStore() *gomock.Call {
 }
 
 // RPCClient mocks base method
-func (m *MockNodeManager) RPCClient() *rpc.Client {
+func (m *MockNodeManager) RPCClient() (*rpc.Client, error) {
 	ret := m.ctrl.Call(m, "RPCClient")
 	ret0, _ := ret[0].(*rpc.Client)
-	return ret0
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
 }
 
 // RPCClient indicates an expected call of RPCClient

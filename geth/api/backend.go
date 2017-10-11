@@ -183,7 +183,12 @@ func (m *StatusBackend) ResetChainData() (<-chan struct{}, error) {
 
 // CallRPC executes RPC request on node's in-proc RPC server
 func (m *StatusBackend) CallRPC(inputJSON string) string {
-	client := m.nodeManager.RPCClient()
+	client, err := m.nodeManager.RPCClient()
+	if err != nil {
+		// TODO(influx6): figure out a better way to do this.
+		return `{"id":0, "version": "2.0", "error": {"message":"` + err.Error() + `"}}`
+	}
+
 	return client.CallRaw(inputJSON)
 }
 
@@ -228,7 +233,11 @@ func (m *StatusBackend) DiscardTransactions(ids []common.QueuedTxID) map[common.
 
 // registerHandlers attaches Status callback handlers to running node
 func (m *StatusBackend) registerHandlers() error {
-	rpcClient := m.NodeManager().RPCClient()
+	rpcClient, err := m.NodeManager().RPCClient()
+	if err != nil {
+		return err
+	}
+
 	rpcClient.RegisterHandler("eth_accounts", m.accountManager.AccountsRPCHandler())
 	rpcClient.RegisterHandler("eth_sendTransaction", m.txQueueManager.SendTransactionRPCHandler)
 

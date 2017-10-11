@@ -91,8 +91,8 @@ func (s *TransactionsTestSuite) TestCallRPCSendTransactionUpstream() {
 	)
 	defer s.StopTestBackend()
 
-	// Allow to sync the blockchain.
-	time.Sleep(TestConfig.Node.SyncSeconds * time.Second)
+	// allow to sync for some time
+	s.EnsureNodeSync()
 
 	err := s.Backend.AccountManager().SelectAccount(TestConfig.Account2.Address, TestConfig.Account2.Password)
 	s.NoError(err)

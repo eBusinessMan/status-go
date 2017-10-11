@@ -87,7 +87,7 @@ type NodeManager interface {
 	AccountKeyStore() (*keystore.KeyStore, error)
 
 	// RPCClient exposes reference to RPC client connected to the running node
-	RPCClient() *rpc.Client
+	RPCClient() (*rpc.Client, error)
 }
 
 // AccountManager defines expected methods for managing Status accounts

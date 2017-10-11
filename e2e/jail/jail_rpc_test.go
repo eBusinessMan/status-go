@@ -97,7 +97,8 @@ func (s *JailRPCTestSuite) TestRegressionGetTransactionReceipt() {
 	s.StartTestBackend(params.RopstenNetworkID)
 	defer s.StopTestBackend()
 
-	rpcClient := s.Backend.NodeManager().RPCClient()
+	rpcClient, err := s.Backend.NodeManager().RPCClient()
+	s.NoError(err)
 	s.NotNil(rpcClient)
 
 	// note: transaction hash is assumed to be invalid
@@ -111,7 +112,7 @@ func (s *JailRPCTestSuite) TestContractDeployment() {
 	defer s.StopTestBackend()
 
 	// Allow to sync, otherwise you'll get "Nonce too low."
-	time.Sleep(TestConfig.Node.SyncSeconds * time.Second)
+	s.EnsureNodeSync()
 
 	// obtain VM for a given chat (to send custom JS to jailed version of Send())
 	s.jail.Parse(testChatID, "")

@@ -61,7 +61,8 @@ func (s *RPCTestSuite) TestCallRPC() {
 		s.NoError(err)
 		<-nodeStarted
 
-		rpcClient := s.NodeManager.RPCClient()
+		rpcClient, err := s.NodeManager.RPCClient()
+		s.NoError(err)
 		s.NotNil(rpcClient)
 
 		type rpcCall struct {
@@ -143,7 +144,8 @@ func (s *RPCTestSuite) TestCallRawResult() {
 	s.NoError(err)
 	<-nodeStarted
 
-	client := s.NodeManager.RPCClient()
+	client, err := s.NodeManager.RPCClient()
+	s.NoError(err)
 	s.NotNil(client)
 
 	jsonResult := client.CallRaw(`{"jsonrpc":"2.0","method":"shh_version","params":[],"id":67}`)
@@ -161,14 +163,15 @@ func (s *RPCTestSuite) TestCallContextResult() {
 	)
 	defer s.StopTestNode()
 
-	client := s.NodeManager.RPCClient()
+	client, err := s.NodeManager.RPCClient()
+	s.NoError(err)
 	s.NotNil(client)
 
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	defer cancel()
 
 	var blockNumber hexutil.Uint
-	err := client.CallContext(ctx, &blockNumber, "eth_blockNumber")
+	err = client.CallContext(ctx, &blockNumber, "eth_blockNumber")
 	s.NoError(err)
 	s.True(blockNumber > 0, "blockNumber should be higher than 0")
 }

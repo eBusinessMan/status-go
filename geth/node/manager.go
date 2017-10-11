@@ -96,20 +96,6 @@ func (m *NodeManager) startNode(config *params.NodeConfig) (<-chan struct{}, err
 		m.node = ethNode
 		m.nodeStopped = make(chan struct{}, 1)
 		m.config = config
-
-		// init RPC client for this node
-		m.rpcClient, err = rpc.NewClient(m.node, m.config.UpstreamConfig)
-		if err != nil {
-			log.Error("Init RPC client failed:", "error", err)
-			m.Unlock()
-			signal.Send(signal.Envelope{
-				Type: signal.EventNodeCrashed,
-				Event: signal.NodeCrashEvent{
-					Error: ErrRPCClient.Error(),
-				},
-			})
-			return
-		}
 		m.Unlock()
 
 		// underlying node is started, every method can use it, we use it immediately
@@ -469,11 +455,35 @@ func (m *NodeManager) AccountKeyStore() (*keystore.KeyStore, error) {
 }
 
 // RPCClient exposes reference to RPC client connected to the running node.
-func (m *NodeManager) RPCClient() *rpc.Client {
-	m.Lock()
-	defer m.Unlock()
+func (m *NodeManager) RPCClient() (*rpc.Client, error) {
+	m.RLock()
+	defer m.RUnlock()
 
-	return m.rpcClient
+	if err := m.isNodeAvailable(); err != nil {
+		return nil, err
+	}
+
+	<-m.nodeStarted
+
+	if m.rpcClient != nil {
+		return m.rpcClient, nil
+	}
+
+	var err error
+	m.rpcClient, err = rpc.NewClient(m.node, m.config.UpstreamConfig)
+	if err != nil {
+		log.Error("Init RPC client failed:", "error", err)
+		signal.Send(signal.Envelope{
+			Type: signal.EventNodeCrashed,
+			Event: signal.NodeCrashEvent{
+				Error: ErrRPCClient.Error(),
+			},
+		})
+
+		return nil, ErrRPCClient
+	}
+
+	return m.rpcClient, nil
 }
 
 // initLog initializes global logger parameters based on
